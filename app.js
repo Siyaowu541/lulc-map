@@ -9,11 +9,12 @@ function render(){
  el('area').textContent=chosen?.name||'All papers';
  el('count').textContent=papers.length+' papers'+(chosen?' (including global studies)':'');
  el('papers').innerHTML=papers.map(p=>'<article class="paper"><div>#'+p.id+' · '+p.year+' · '+escape(p.author)+'</div><strong>'+escape(p.title)+'</strong><div>'+escape(p.kind==='global'?'Global study — local sample availability may vary':p.regions.length?p.regions.map(k=>data.regions[k].name).join(' / '):p.originalScope)+'</div>'+(['scene','synthetic','unknown','distributed'].includes(p.kind)?'<div>'+escape({scene:'Scene labels, not pixel labels',synthetic:'Synthetic training data',unknown:'Study location unclear',distributed:'Sample coordinates not plotted'}[p.kind])+'</div>':'')+'<a target="_blank" rel="noopener" href="'+escape(p.pdf)+'">Paper PDF</a></article>').join('')||'<p>No related papers in this collection.</p>';
- countries.setStyle(f=>({color:chosen?.type==='country'&&chosen.id===f.properties.code?'#b97516':'#a9b8bd',weight:chosen?.type==='country'&&chosen.id===f.properties.code?2:.6,fillColor:chosen?.type==='country'&&chosen.id===f.properties.code?'#f3ca80':data.papers.some(p=>countryCodes(p).includes(f.properties.code))?'#c7dce5':'#f4f4ee',fillOpacity:.8}));
- regions.eachLayer(l=>{const active=chosen?.type==='region'&&chosen.id===l.areaKey;l.setStyle({color:active?'#b97516':'#427b94',weight:active?3:1.3,fillColor:active?'#f3ca80':'#427b94',fillOpacity:active?.25:l.isPoint?.8:.04});});
+ countries.setStyle(f=>({color:chosen?.type==='country'&&chosen.id===f.properties.code?'#ffce57':'#c7d4d9',weight:chosen?.type==='country'&&chosen.id===f.properties.code?2.5:.6,fillColor:'#ffce57',fillOpacity:chosen?.type==='country'&&chosen.id===f.properties.code?.16:0}));
+ regions.eachLayer(l=>{const active=chosen?.type==='region'&&chosen.id===l.areaKey;l.setStyle({color:active?'#ffce57':'#78d9ff',weight:active?3:1.7,fillColor:active?'#ffce57':'#78d9ff',fillOpacity:active?.2:l.isPoint?.9:.035});});
 }
 Promise.all([fetch('data.json').then(r=>r.json()),fetch('countries.geojson').then(r=>r.json())]).then(([d,w])=>{
- data=d;map=L.map('map',{minZoom:1,maxZoom:13,zoomSnap:.5}).setView([22,10],1.5);
+ data=d;map=L.map('map',{minZoom:1,maxZoom:19,zoomSnap:.5}).setView([22,10],1.5);
+ L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community'}).addTo(map);
  map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/">Natural Earth</a>');
  countries=L.geoJSON(w,{onEachFeature:(f,l)=>{l.bindTooltip(f.properties.name);l.on('click',()=>{chosen={type:'country',id:f.properties.code,name:f.properties.name};render();el('papers').scrollTop=0;});}}).addTo(map);
  regions=L.featureGroup().addTo(map);
