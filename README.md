@@ -27,8 +27,10 @@ Sources and licences:
 - Leaflet 1.9.4 — BSD-2-Clause; licence included.
 - Satellite basemap: Esri World Imagery; on-map provider attribution retained.
 
-Each feature retains its source, precision and explanation in `coverage.geojson`. Access status is inherited from the data tracker; this update is not a recheck of every download link. Colours show reference-label download status, **not land-cover classes**. Purple tint represents global map products only.
+Each feature retains its source, precision and explanation in `coverage.geojson`. Access status is inherited from the data tracker; this update is not a recheck of every download link. Colours now show the number of papers linked to each marked area (1 / 2 / 3+), independent of download status. Yellow highlights the selection. Pale blue land tint represents global mapping studies. Eight named study cities use administrative outlines instead of centre points; these outlines do not imply that every location in a city was analysed.
 
 ## Files
 
 `index.html`, `style.css`, `app.js`, `coverage-core.js`, `data.json`, `coverage.geojson`, `countries.geojson` and bundled Leaflet files are served directly from the repository root. Query-string versions prevent stale browser assets after publication. A `?year=2018` URL opens a selected year; `?year=all` opens the full collection.
+
+The map is a published land-cover research coverage index. Reference-data access badges have been removed from the interface; the separate data tracker is unchanged.

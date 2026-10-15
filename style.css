@@ -3,3 +3,5 @@
 .year-ticks{position:relative;height:12px;margin:3px 7px 0}.year-ticks span{position:absolute;transform:translateX(-50%)}.year-ticks span:nth-child(1){left:0;transform:none}.year-ticks span:nth-child(2){left:19.2308%}.year-ticks span:nth-child(3){left:38.4615%}.year-ticks span:nth-child(4){left:57.6923%}.year-ticks span:nth-child(5){left:76.9231%}.year-ticks span:nth-child(6){right:0;transform:none}
 
 @media(max-width:600px){.timeline-heading p{display:none}}
+
+.study-one{background:#42d6a0}.study-two{background:#65b9ef}.study-many{background:#b7a3fa}.selected-area{background:#ffe59a}.study-badge{background:#e4f1e7;color:#27694f}.global-swatch{background:#a7bed4}.global-summary button{background:#eaf1f8f2;border-color:#b9cbdc;color:#3d5972}.global-summary button span{color:#607a8f}
