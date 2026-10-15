@@ -9,6 +9,7 @@ const precisionLabel={footprint:'Reconstructed aerial-patch footprint',tile:'Pub
 function areaDetail(q){if(q.precision==='footprint'){const n=q.detail.match(/^(\d+) aerial patches/),dates=q.detail.match(/Acquisition dates ([\d-]+) to ([\d-]+)/);return `${n?n[1]+' aerial image patches. ':''}${dates?'Acquired '+dates[1]+(dates[1]===dates[2]?'':' to '+dates[2])+'. ':''}Image bounds reconstructed from official coordinates.`;}return precisionLabel[q.precision]+'. '+q.detail;}
 function setYear(value){year=value;chosen=null;el('year-range').value=value??2020;el('year-select').value=value??'all';el('all-years').classList.toggle('active',value===null);el('previous').disabled=value===null||value===2000;el('next').disabled=value===null||value===2026;const u=new URL(location.href);u.searchParams.set('year',value??'all');history.replaceState(null,'',u);render();el('papers').scrollTop=0;}
 function setChosen(value){chosen=value;renderList();renderCountryStyles();highlightFeatures();el('papers').scrollTop=0;}
+function worldView(){map.fitBounds([[-60,-180],[80,180]],{padding:[12,24],maxZoom:1.5});}
 function matchingList(){if(!chosen)return active;if(chosen.type==='feature')return active.filter(p=>chosen.paperIds.includes(p.id));if(chosen.type==='globals')return active.filter(p=>p.globalMap);if(chosen.type==='country')return active.filter(p=>countryCodes(p).includes(chosen.id)||p.globalMap);return active;}
 function renderList(){
  const papers=matchingList();el('area').textContent=chosen?.name||'Worldwide';el('clear-area').hidden=!chosen;
@@ -58,13 +59,13 @@ function setupTimeline(){
  el('year-bars').querySelectorAll('button').forEach(b=>b.onclick=()=>setYear(Number(b.dataset.year)));
  el('year-range').oninput=e=>setYear(Number(e.target.value));el('year-select').onchange=e=>setYear(e.target.value==='all'?null:Number(e.target.value));
  el('previous').onclick=()=>setYear(Math.max(2000,year-1));el('next').onclick=()=>setYear(Math.min(2026,year+1));el('all-years').onclick=()=>setYear(null);
- el('mixed-years').onchange=()=>{chosen=null;render();};el('clear-area').onclick=()=>setChosen(null);el('reset-map').onclick=()=>{setChosen(null);map.setView([22,10],1.5);};
+ el('mixed-years').onchange=()=>{chosen=null;render();};el('clear-area').onclick=()=>setChosen(null);el('reset-map').onclick=()=>{setChosen(null);worldView();};
 }
 Promise.all(['data.json?v=timeline1','countries.geojson','coverage.geojson?v=timeline1'].map(u=>fetch(u).then(r=>{if(!r.ok)throw Error(r.status);return r.json();}))).then(([d,w,g])=>{
- data=d;footprints=g;map=L.map('map',{minZoom:1,maxZoom:19,zoomSnap:.5,zoomControl:false,preferCanvas:true}).setView([22,10],1.5);
- L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community'}).addTo(map);
+ data=d;footprints=g;map=L.map('map',{minZoom:.5,maxZoom:19,zoomSnap:.5,zoomControl:false,preferCanvas:true}).setView([22,10],1.5);
+ L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,noWrap:true,attribution:'Imagery &copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community'}).addTo(map);
  L.control.zoom({position:'topright'}).addTo(map);L.control.scale({position:'bottomright',imperial:false}).addTo(map);
  map.attributionControl.addAttribution('<a href="https://www.naturalearthdata.com/">Natural Earth</a> · <a href="https://www.geoboundaries.org/">geoBoundaries</a> · IGN · MOLCA');
  countries=L.geoJSON(w,{onEachFeature:(f,l)=>{l.bindTooltip(esc(f.properties.name));l.on('click',()=>setChosen({type:'country',id:f.properties.code,name:f.properties.name,detail:'Publications associated with this country, plus any global map products. A country association is not continuous sample coverage.'}));}}).addTo(map);
- coverage=L.featureGroup().addTo(map);setupTimeline();setYear(year);
+ coverage=L.featureGroup().addTo(map);setupTimeline();setYear(year);worldView();
 }).catch(error=>{console.error(error);el('count').textContent='Could not load the collection. Please refresh.';el('year-context').textContent='Map data unavailable';});
