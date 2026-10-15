@@ -5,3 +5,7 @@
 @media(max-width:600px){.timeline-heading p{display:none}}
 
 .study-one{background:#42d6a0}.study-two{background:#65b9ef}.study-many{background:#b7a3fa}.selected-area{background:#ffe59a}.study-badge{background:#e4f1e7;color:#27694f}.global-swatch{background:#a7bed4}.global-summary button{background:#eaf1f8f2;border-color:#b9cbdc;color:#3d5972}.global-summary button span{color:#607a8f}
+
+#year-bars{height:10px}#year-bars button{height:4px!important;background:#bdd1c0!important}#year-bars button.active{background:#24775b!important}.global-swatch{margin-right:0}
+
+#map{background:#d9e7eb}

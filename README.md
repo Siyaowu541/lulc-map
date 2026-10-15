@@ -34,3 +34,8 @@ Each feature retains its source, precision and explanation in `coverage.geojson`
 `index.html`, `style.css`, `app.js`, `coverage-core.js`, `data.json`, `coverage.geojson`, `countries.geojson` and bundled Leaflet files are served directly from the repository root. Query-string versions prevent stale browser assets after publication. A `?year=2018` URL opens a selected year; `?year=all` opens the full collection.
 
 The map is a published land-cover research coverage index. Reference-data access badges have been removed from the interface; the separate data tracker is unchanged.
+
+## Data extent display (latest revision)
+Regional shading now uses only reconstructed image footprints and published data-tile extents, with one uniform colour. Administrative study outlines and location points are excluded from the displayed data footprints. Global mapped products retain a separate whole-land tint. Paper-count colouring and visible counts have been removed. Papers without spatial footprints remain in the list, without an invented coverage polygon. MOLCA tile extents can contain no-data pixels; valid-pixel masks have not been imported.
+
+The latest basemap is the standard OpenStreetMap map (with OpenStreetMap contributor attribution), replacing satellite imagery.
