@@ -13,7 +13,7 @@ function worldView(){map.stop();map.fitBounds([[-60,-180],[80,180]],{padding:[12
 function matchingList(){if(!chosen)return active;if(chosen.type==='feature')return active.filter(p=>chosen.paperIds.includes(p.id));if(chosen.type==='globals')return active.filter(p=>p.globalMap);if(chosen.type==='country')return active.filter(p=>countryCodes(p).includes(chosen.id)||p.globalMap);return active;}
 function renderList(){
  const papers=matchingList();el('area').textContent=chosen?.name||'Worldwide';el('clear-area').hidden=!chosen;
- el('count').textContent=year===null?'All result years':`Data for ${year}`;
+ el('count').textContent=year===null?'Study areas · all result years':`Study areas with results for ${year}`;
  el('selection-detail').hidden=!chosen?.detail;el('selection-detail').textContent=chosen?.detail||'';
  el('papers').innerHTML=papers.map(p=>{
   const paperShapes=activeFeatures.filter(f=>f.properties.paperIds.includes(p.id)),canLocate=paperShapes.length>0;
@@ -21,7 +21,7 @@ function renderList(){
   const quality=p.dateQuality==='unknown'?'Result years not reported':p.dateQuality==='mixed'?'Mixed-year inputs; not an annual sequence':p.dateQuality==='approximate'?'Approximate baseline year':'';
  const missing=(!p.globalMap&&!canLocate)?'Study area reviewed; a usable geographic boundary has not been recovered.':'';
   return `<article class="paper" data-paper-id="${p.id}"><div class="paper-top"><span class="paper-id">PAPER ${String(p.id).padStart(2,'0')}</span><span class="badge study-badge">Land-cover study</span></div><h3>${esc(p.title)}</h3><div class="byline">${esc(p.author)} · Published ${p.year}</div><div class="paper-meta"><span>Results: ${esc(p.resultYears)}</span><span>${esc(p.resolution)}</span></div><p class="paper-scope">${esc(p.scope)}</p><p class="paper-scope">${esc(p.frequency)}</p>${[quality,p.coverageNote,boundaryNote,missing].filter(Boolean).map(t=>`<p class="paper-note">${esc(t)}</p>`).join('')}<div class="paper-actions"><a target="_blank" rel="noopener" href="${esc(p.pdf)}">Read paper ↗</a>${canLocate?`<button class="locate-paper" data-locate="${p.id}">Locate on map →</button>`:''}</div></article>`;
- }).join('')||'<div class="empty-list">No results in this collection match this selection.<br>Try another year, enable mixed-year results, or choose All years. An empty map does not mean no data exist elsewhere.</div>';
+ }).join('')||'<div class="empty-list">No mapped study results in this collection match this selection.<br>Try another year, enable mixed-year results, or choose All years. An empty map does not mean the area has never been studied.</div>';
  el('papers').querySelectorAll('[data-locate]').forEach(b=>b.onclick=()=>locatePaper(Number(b.dataset.locate)));
 }
 function renderCountryStyles(){const globals=active.some(p=>p.globalMap);countries.setStyle(f=>({color:chosen?.type==='country'&&chosen.id===f.properties.code?'#ffe59a':'#d9e3dc',weight:chosen?.type==='country'&&chosen.id===f.properties.code?2:.45,fillColor:chosen?.type==='country'&&chosen.id===f.properties.code?'#ffe59a':'#a7bed4',fillOpacity:chosen?.type==='country'&&chosen.id===f.properties.code?.18:globals?.14:0}));}
@@ -32,9 +32,9 @@ function addCoverage(){
  const papers=core.featurePapers(f,active,year),q=f.properties,approx=['study','digitized'].includes(q.precision),colour=approx?'#e7a44b':'#42d6a0';
   const style={color:colour,weight:approx?1.8:1,fillColor:colour,fillOpacity:approx?.2:q.precision==='tile'?.16:.4,dashArray:approx?'6 4':null,bubblingMouseEvents:false};
   const shape=L.geoJSON(f,{style,pointToLayer:(_f,ll)=>L.circleMarker(ll,{...style,radius:6,weight:1.5,fillOpacity:.95,color:'#fff',className:'map-point'}),onEachFeature:(_f,l)=>{
-   l.bindTooltip(`<strong>${esc(q.name)}</strong><small>${esc(precisionLabel[q.precision])}</small><small>${q.years?'Observation year: '+q.years.join(', '):'Paper study area'}</small>`);
+   l.bindTooltip(`<strong>${esc(q.name)}</strong><small>${esc(precisionLabel[q.precision])}</small><small>${year!==null?'Study results for '+year:q.years?'Result / reference years: '+q.years.join(', '):'Paper study area'}</small>`);
    renderedLayers.push({layer:l,properties:q,style:{...style,...(q.precision==='locator'?{fillOpacity:.95,color:'#fff',weight:1.5}:{} )}});
-   l.on('click',e=>{L.DomEvent.stopPropagation(e);const hits=activeFeatures.filter(x=>core.pointInGeometry([e.latlng.lng,e.latlng.lat],x.geometry)),ids=[...new Set(hits.flatMap(x=>core.featurePapers(x,active,year).map(p=>p.id)))];setChosen({type:'feature',key:q.key,name:q.name,paperIds:ids.length?ids:papers.map(p=>p.id),detail:areaDetail(q)});if(l.getBounds&&map.getZoom()<7)map.fitBounds(l.getBounds().pad(.3),{maxZoom:10});});
+   l.on('click',e=>{L.DomEvent.stopPropagation(e);const hits=activeFeatures.filter(x=>core.pointInGeometry([e.latlng.lng,e.latlng.lat],x.geometry)),ids=[...new Set([...hits.flatMap(x=>core.featurePapers(x,active,year).map(p=>p.id)),...active.filter(p=>p.globalMap).map(p=>p.id)])];setChosen({type:'feature',key:q.key,name:q.name,paperIds:ids.length?ids:papers.map(p=>p.id),detail:areaDetail(q)});if(l.getBounds&&map.getZoom()<7)map.fitBounds(l.getBounds().pad(.3),{maxZoom:10});});
   }});shape.addTo(coverage);
  }
 }
@@ -44,7 +44,7 @@ function render(){
  activeFeatures=footprints.features.filter(f=>['Polygon','MultiPolygon'].includes(f.geometry.type)&&core.featurePapers(f,active,year).length);
  el('map-year').textContent=year===null?'All years':year;el('map-matches').textContent=' · Study areas';
  const unknown=data.papers.filter(p=>!p.years.length).length,mixed=data.papers.filter(p=>p.dateQuality==='mixed'&&p.years.includes(year)).length;
- el('year-context').textContent=year===null?'All observation years':'Observation years, not publication years. Unreported years appear under All years.';
+ el('year-context').textContent=year===null?'All study-result years; publication dates do not filter the map.':'Showing results for '+year+', including papers published later. Unknown result years appear under All years.';
  const globals=active.filter(p=>p.globalMap),n=core.globalProductCount(active);
  el('global-summary').innerHTML=n?'<button id="show-globals">Global mapping studies<span>Pale blue land shows global study scope.</span></button>':'';
  if(n)el('show-globals').onclick=()=>setChosen({type:'globals',name:'Global mapping studies',detail:'These publications map land cover worldwide. GLC_FCS30D has two papers describing the same product.'});
